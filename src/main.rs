@@ -1,3 +1,4 @@
+#[derive(Debug)]
 enum Primitive {
     Add,
     Multiply,
@@ -21,9 +22,9 @@ fn evaluate(array: Vec<Primitive>) -> i32 {
 
 fn main() {
     let mut primitives = Vec::<Primitive>::new();
-    primitives.push(Primitive::Multiply);
-    primitives.push(Primitive::Number(3));
-    primitives.push(Primitive::Number(4));
+    primitives.push(Primitive::Add);
+    primitives.push(Primitive::Number(17));
+    primitives.push(Primitive::Number(-754));
     let result = evaluate(primitives);
     println!("{}", result);
 }
