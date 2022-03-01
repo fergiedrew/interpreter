@@ -1,7 +1,10 @@
 #[derive(Debug)]
+#[derive(Copy)]
+#[derive(Clone)]
 enum Primitive {
     Add,
     Multiply,
+    Subtract,
     Number(i32)
 }
 
@@ -12,15 +15,17 @@ fn evaluate(array: Vec<Primitive>) -> i32 {
     match element {
         Primitive::Add => { iter.fold(0, |total, next| total + evaluate(vec![*next])) }
         Primitive::Multiply => { iter.fold(1, |total, next| total * evaluate(vec![*next])) }
+        Primitive::Subtract => { iter.fold(evaluate(vec![array[1]]), |total, next| total - evaluate(vec![*next])) }
         Primitive::Number(val) => *val
     }
 }
 
 fn main() {
     let mut primitives = Vec::<Primitive>::new();
-    primitives.push(Primitive::Add);
-    primitives.push(Primitive::Number(17));
-    primitives.push(Primitive::Number(-754));
+    primitives.push(Primitive::Subtract);
+    primitives.push(Primitive::Number(-20));
+    primitives.push(Primitive::Number(20));
+    primitives.push(Primitive::Number(-20));
     let result = evaluate(primitives);
     println!("{}", result);
 }
