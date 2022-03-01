@@ -1,22 +1,22 @@
+<<<<<<< HEAD
 #[derive(Debug)]
+=======
+#[derive(Copy, Clone)]
+>>>>>>> 7845c772d0b1c04d93514b7ffca1e4a822fa7dce
 enum Primitive {
     Add,
     Multiply,
     Number(i32)
 }
 
-fn eval_prim(primitive: &Primitive) -> i32 {
-    match primitive {
-        Primitive::Number(val) => *val,
-        _ => 0
-    }
-}
-
 fn evaluate(array: Vec<Primitive>) -> i32 {
-    match array[0] {
-        Primitive::Add => { eval_prim(&array[1]) + eval_prim(&array[2])}
-        Primitive::Multiply => { eval_prim(&array[1]) * eval_prim(&array[2])}
-        _ => 0
+    let element = &array[0];
+    let mut iter = array.iter();
+    iter.next();
+    match element {
+        Primitive::Add => { iter.fold(0, |total, next| total + evaluate(vec![*next])) }
+        Primitive::Multiply => { iter.fold(1, |total, next| total * evaluate(vec![*next])) }
+        Primitive::Number(val) => *val
     }
 }
 
