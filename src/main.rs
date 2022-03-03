@@ -15,7 +15,14 @@ fn evaluate(array: Vec<Primitive>) -> i32 {
     match element {
         Primitive::Add => { iter.fold(0, |total, next| total + evaluate(vec![*next])) }
         Primitive::Multiply => { iter.fold(1, |total, next| total * evaluate(vec![*next])) }
-        Primitive::Subtract => { iter.fold(evaluate(vec![array[1]]), |total, next| total - evaluate(vec![*next])) }
+        Primitive::Subtract => {
+            let start = iter.next();
+            if let Some(Primitive::Number(value)) = start {
+                iter.fold(*value, |total,next| total - evaluate(vec!(*next)))
+            } else {
+                0
+            } 
+        }
         Primitive::Number(val) => *val
     }
 }
@@ -27,5 +34,5 @@ fn main() {
     primitives.push(Primitive::Number(20));
     primitives.push(Primitive::Number(-20));
     let result = evaluate(primitives);
-    println!("{}", result);
+    println!("Should be -20: {}", result);
 }
