@@ -35,6 +35,14 @@ fn main() {
     let addition = Expression::Add(vec![Expression::Number(2), Expression::Number(2)]);
     println!("2 + 2 is {}", evaluate(&addition));
 }
+fn print_expression(expression: &Expression, print_value: &String) {
+    match expression {
+        Expression::Add(_) => print_expression(expression, &String::from("(+ ")),
+        Expression::Multiply(_) => print_expression(expression, &String::from("(* ")),
+        Expression::Number(val) => print_expression(expression, &String::from(val.to_string()))
+    }
+
+}
 
 // Arrange
 // Act
