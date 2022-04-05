@@ -32,14 +32,29 @@ pub fn evaluate(expression: &Expression) -> i32 {
 }
 
 fn main() {
-    let addition = Expression::Add(vec![Expression::Number(2), Expression::Number(2)]);
-    println!("2 + 2 is {}", evaluate(&addition));
+    let addition = Expression::Multiply(vec![Expression::Number(2),Expression::Add(vec![Expression::Number(2), Expression::Number(2)])]);
+    println!("(2 + 2) * 2 is {}", evaluate(&addition));
+    print_expression(&addition);
 }
-fn print_expression(expression: &Expression, print_value: &String) {
+fn print_expression(expression: &Expression) {
     match expression {
-        Expression::Add(_) => print_expression(expression, &String::from("(+ ")),
-        Expression::Multiply(_) => print_expression(expression, &String::from("(* ")),
-        Expression::Number(val) => print_expression(expression, &String::from(val.to_string()))
+        Expression::Add(expressions) => {
+            print!("(+");
+            for e in expressions {
+                print!(" ");
+                print_expression(e)
+            }
+            print!(")");
+        },
+        Expression::Multiply(expressions) => {
+            print!("(*");
+            for e in expressions {
+                print!(" ");
+                print_expression(e)
+            }
+            print!(")");
+        },
+        Expression::Number(val) => {print!("{}", val)}
     }
 
 }
