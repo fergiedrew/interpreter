@@ -42,11 +42,25 @@ fn evaluate_addition(expression: &Expression) -> Expression {
     }
 }
 
+fn evaluate_fixed_point(expression: &Expression) -> f64 {
+    if let Expression::FixedPoint(first, second) = expression {
+        let mut decimal = *second as f64;
+        while decimal > 1.0 {
+            decimal = decimal / 10.0
+        }
+        return *first as f64 + decimal
+    } else {
+        panic!("Did not receive fixed point")
+
+    }
+}
+
 
 fn evaluate(expression: &Expression) -> f64 {
     match expression {
         Expression::Integer(_) => evaluate_integer(&expression),
         Expression::Addition(_) => evaluate(&evaluate_addition(&expression)),
+        Expression::FixedPoint(_,_) => evaluate_fixed_point(&expression),
         _ => panic!("Not Implemented!")
     }
 }
@@ -82,5 +96,15 @@ mod tests {
         let value = crate::evaluate(&expression);
         // assert
         assert_eq!(value, 4.0)
+    }
+
+    #[test]
+    fn test_fixed_point() {
+        // arrange
+        let fixed_point = crate::Expression::FixedPoint(12, 45);
+        // act 
+        let value = crate::evaluate(&fixed_point);
+        // assert
+        assert_eq!(value, 12.45)
     }
 }
