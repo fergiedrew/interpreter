@@ -30,10 +30,33 @@ fn evaluate_add_integers(expressions: &Vec<Expression>) -> Expression {
     Expression::Integer(total)
 }
 
+fn evaluate_add_fixed_points(expressions: &Vec<Expression>) -> Expression {
+    let mut total = 0.0;
+    for each in expressions {
+        if let Expression::FixedPoint(_,_) = each {
+            total = total + evaluate(each);
+        } else {
+            panic!("I can only add fixed points!")
+        }
+    }
+    f64_as_fixed_point(&total)
+}
+
+fn f64_as_fixed_point(number: &f64) -> Expression {
+    let first = *number as i32;
+    let mut second = number - first as f64;
+    while second.fract() != 0.0 {
+        second = second * 10.0;
+    }
+    Expression::FixedPoint(first, second as i32)
+
+}
+
 fn evaluate_addition(expression: &Expression) -> Expression {
     if let Expression::Addition(expressions) = expression {
         match expressions[0] {
             Expression::Integer(_) => evaluate_add_integers(&expressions),
+            Expression::FixedPoint(_,_) => evaluate_add_fixed_points(&expressions),
             _ => panic!("I only know how to add integers")
         }
 
@@ -51,7 +74,6 @@ fn evaluate_fixed_point(expression: &Expression) -> f64 {
         return *first as f64 + decimal
     } else {
         panic!("Did not receive fixed point")
-
     }
 }
 
@@ -106,5 +128,18 @@ mod tests {
         let value = crate::evaluate(&fixed_point);
         // assert
         assert_eq!(value, 12.45)
+    }
+
+
+    #[test]
+    fn test_fixed_point_addition() {
+        // arrange 
+        let num1 = crate::Expression::FixedPoint(12, 0439);
+        let num2 = crate::Expression::FixedPoint(123,20394);
+        let addition  = crate::Expression::Addition(vec![num1,num2]);
+        // act 
+        let value = crate::evaluate(&addition);
+        // assert
+        assert_eq!(value, 134.24784)
     }
 }
