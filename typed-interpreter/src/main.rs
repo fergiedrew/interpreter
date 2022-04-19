@@ -62,57 +62,57 @@ fn after_decimal(fixed_point: &Expression) -> i32 {
 }
 
 // Does not work for any results or products that have a leading 0 after decimal point
-fn evaluate_add_fixed_points(expressions: &Vec<Expression>) -> Expression {
-    let mut sum = Expression::FixedPoint(0,0);
-    let mut beforesum = 0;
-    let mut aftersum = 0;
+// fn evaluate_add_fixed_points(expressions: &Vec<Expression>) -> Expression {
+//     let mut sum = Expression::FixedPoint(0,0);
+//     let mut beforesum = 0;
+//     let mut aftersum = 0;
 
-    for fixed_point in expressions {
-        // Get the length of the number after decimal point
-        let mut previous_length = get_length(&after_decimal(&sum));
-        println!("{}", previous_length);
+//     for fixed_point in expressions {
+//         // Get the length of the number after decimal point
+//         let mut previous_length = get_length(&after_decimal(&sum));
+//         println!("{}", previous_length);
 
-        // Get number to add onto after decimal point as well as its length
-        let mut addon = after_decimal(&fixed_point);
-        let mut addon_length = get_length(&after_decimal(&fixed_point));
+//         // Get number to add onto after decimal point as well as its length
+//         let mut addon = after_decimal(&fixed_point);
+//         let mut addon_length = get_length(&after_decimal(&fixed_point));
 
 
-        // If no fractional part, keep number after decimal and add before decimal
-        if addon  == 0 || after_decimal(&sum) == 0 {
-            beforesum += before_decimal(&fixed_point);
-            aftersum += after_decimal(&fixed_point);
-            sum = Expression::FixedPoint(beforesum, aftersum);
-            continue;
-        }
+//         // If no fractional part, keep number after decimal and add before decimal
+//         if addon  == 0 || after_decimal(&sum) == 0 {
+//             beforesum += before_decimal(&fixed_point);
+//             aftersum += after_decimal(&fixed_point);
+//             sum = Expression::FixedPoint(beforesum, aftersum);
+//             continue;
+//         }
         
 
-        // Make the after decimal the same length, that is, same power of 10
-        if previous_length > addon_length {
-            addon = addon * 10i32.pow((previous_length - addon_length) as u32);
-        } else {
-            aftersum = aftersum * 10i32.pow((addon_length - previous_length) as u32);
-        }
+//         // Make the after decimal the same length, that is, same power of 10
+//         if previous_length > addon_length {
+//             addon = addon * 10i32.pow((previous_length - addon_length) as u32);
+//         } else {
+//             aftersum = aftersum * 10i32.pow((addon_length - previous_length) as u32);
+//         }
         
-        // Add before decimal and after decimal
-        beforesum += before_decimal(&fixed_point);
-        aftersum += addon;
+//         // Add before decimal and after decimal
+//         beforesum += before_decimal(&fixed_point);
+//         aftersum += addon;
 
-        // Get length after adding fractional parts
-        let mut new_length = get_length(&aftersum);
+//         // Get length after adding fractional parts
+//         let mut new_length = get_length(&aftersum);
 
-        // If length increased, carry the one to before sum
-        if new_length > previous_length {
-            beforesum += 1;
-            aftersum = aftersum - 10i32.pow(previous_length as u32);
-        }
+//         // If length increased, carry the one to before sum
+//         if new_length > previous_length {
+//             beforesum += 1;
+//             aftersum = aftersum - 10i32.pow(previous_length as u32);
+//         }
 
-        // Put everything in a fixed point
-        sum = Expression::FixedPoint(beforesum, aftersum);
+//         // Put everything in a fixed point
+//         sum = Expression::FixedPoint(beforesum, aftersum);
 
-    }
+//     }
 
-    return sum;
-}
+//     return sum;
+// }
 
  
 
@@ -165,12 +165,11 @@ fn evaluate_add_fixed_points(expressions: &Vec<Expression>) -> Expression {
     for each in expressions {
         beforesum += before_decimal(&each);
         aftersum += after_decimal(&each);
+        if aftersum >= 100 {
+            aftersum -= 100;
+            beforesum += 1;
+        }
     }
-
-    if aftersum >= 100 {
-        aftersum = aftersum - (aftersum - 100)
-    }
-
     return Expression::FixedPoint(beforesum, aftersum)
 }
 
@@ -232,11 +231,11 @@ mod tests {
     fn test_fixed_point_addition() {
         // arrange 
         let num1 = crate::Expression::FixedPoint(0, 92);
-        let num2 = crate::Expression::FixedPoint(0, 1);
+        let num2 = crate::Expression::FixedPoint(0, 9);
         let addition  = crate::Expression::Addition(vec![num1,num2]);
         // act 
         let value = crate::evaluate(&addition);
         // assert
-        assert_eq!(value, 0.93)
+        assert_eq!(value, 1.01)
     }
 }
