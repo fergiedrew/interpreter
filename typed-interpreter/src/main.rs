@@ -11,12 +11,16 @@ enum Expression {
     Addition(Vec<Expression>)
 }
 
-pub struct Environment {
-    enviroment_variables: HashMap
+// Evaluation modules for operations with expressions
+
+fn evaluate(expression: &Expression) -> f64 {
+    match expression {
+        Expression::Integer(_) => evaluate_integer(&expression),
+        Expression::Addition(_) => evaluate(&evaluate_addition(&expression)),
+        Expression::FixedPoint(_,_) => evaluate_fixed_point(&expression),
+        _ => panic!("Not Implemented!")
+    }
 }
-
-
-// Evaluation modules
 
 fn evaluate_integer(expression: &Expression) -> f64 {
     if let Expression::Integer(value) = expression {
@@ -26,58 +30,19 @@ fn evaluate_integer(expression: &Expression) -> f64 {
     }
 }
 
-fn evaluate_add_integers(expressions: &Vec<Expression>) -> Expression {
-    let mut total = 0;
-    for each in expressions {
-        if let Expression::Integer(value) = each {
-            total = total + value
-        } else {
-            panic!("I only can add integers")
+
+fn evaluate_fixed_point(expression: &Expression) -> f64 {
+    if let Expression::FixedPoint(b,a) = expression {
+        let mut before = *b as f64;
+        let mut after = *a as f64;
+        while after >= 100.0 {
+            after -= 100.0;
+            before += 1.0;
         }
-    }
-    Expression::Integer(total)
-}
-
-fn get_length(integer: &i32) -> i32 {
-    let mut len = 1;
-    let mut modulus = 10;
-    while *integer % modulus != *integer {
-        modulus *= 10;
-        len += 1;
-    }
-    return len
-}
-
-// Getter for before decimal point for fixed_point
-
-fn before_decimal(fixed_point: &Expression) -> i32 {
-    if let Expression::FixedPoint(before, _) = fixed_point {
-        return *before
+        return before + (after / 100.0)
     } else {
-        panic!("Not given fixed point!");
+        panic!("evaluate_fixed_point() not given type Expression::FixedPoint");
     }
-    
-}
-// Getter for after decimal point
-fn after_decimal(fixed_point: &Expression) -> i32 {
-    if let Expression::FixedPoint(_, after) = fixed_point {
-        return *after
-    } else {
-        panic!("Not given fixed point!");
-    }
-    
-}
-
-
- 
-
-fn f64_as_fixed_point(number: &f64) -> Expression {
-    let first = *number as i32;
-    let mut second = number - first as f64;
-    while second.fract() != 0.0 {
-        second = second * 10.0;
-    }
-    Expression::FixedPoint(first, second as i32)
 
 }
 
@@ -95,10 +60,18 @@ fn evaluate_addition(expression: &Expression) -> Expression {
 }
 
 
-fn evaluate_fixed_point(expression: &Expression) -> f64 {
-    // Finish this for homework 16
-
+fn evaluate_add_integers(expressions: &Vec<Expression>) -> Expression {
+    let mut total = 0;
+    for each in expressions {
+        if let Expression::Integer(value) = each {
+            total = total + value
+        } else {
+            panic!("I only can add integers")
+        }
+    }
+    Expression::Integer(total)
 }
+
 
 fn evaluate_add_fixed_points(expressions: &Vec<Expression>) -> Expression {
     let mut beforesum = 0;
@@ -114,20 +87,42 @@ fn evaluate_add_fixed_points(expressions: &Vec<Expression>) -> Expression {
     return Expression::FixedPoint(beforesum, aftersum)
 }
 
-fn evaluate_enviroment_variable(enviroment: Environment, key: String) -> Expression {
-    return Expression::FixedPoint(0,0);
-
-}
 
 
-fn evaluate(expression: &Expression) -> f64 {
-    match expression {
-        Expression::Integer(_) => evaluate_integer(&expression),
-        Expression::Addition(_) => evaluate(&evaluate_addition(&expression)),
-        Expression::FixedPoint(_,_) => evaluate_fixed_point(&expression),
-        _ => panic!("Not Implemented!")
+// Getters for fields in Expressions
+
+fn before_decimal(fixed_point: &Expression) -> i32 {
+    if let Expression::FixedPoint(before, _) = fixed_point {
+        return *before
+    } else {
+        panic!("Not given fixed point!");
     }
+    
 }
+
+// Getter for after decimal point
+fn after_decimal(fixed_point: &Expression) -> i32 {
+    if let Expression::FixedPoint(_, after) = fixed_point {
+        return *after
+    } else {
+        panic!("Not given fixed point!");
+    }
+    
+}
+
+fn get_length(integer: &i32) -> i32 {
+    let mut len = 1;
+    let mut modulus = 10;
+    while *integer % modulus != *integer {
+        modulus *= 10;
+        len += 1;
+    }
+    return len
+}
+
+
+
+
 
 
 
