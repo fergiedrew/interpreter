@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 fn main() {
     println!("{}", 03)
 
@@ -8,6 +10,11 @@ enum Expression {
     FixedPoint(i32,i32),
     Addition(Vec<Expression>)
 }
+
+pub struct Environment {
+    enviroment_variables: HashMap
+}
+
 
 // Evaluation modules
 
@@ -60,6 +67,73 @@ fn after_decimal(fixed_point: &Expression) -> i32 {
     }
     
 }
+
+
+ 
+
+fn f64_as_fixed_point(number: &f64) -> Expression {
+    let first = *number as i32;
+    let mut second = number - first as f64;
+    while second.fract() != 0.0 {
+        second = second * 10.0;
+    }
+    Expression::FixedPoint(first, second as i32)
+
+}
+
+fn evaluate_addition(expression: &Expression) -> Expression {
+    if let Expression::Addition(expressions) = expression {
+        match expressions[0] {
+            Expression::Integer(_) => evaluate_add_integers(&expressions),
+            Expression::FixedPoint(_,_) => evaluate_add_fixed_points(&expressions),
+            _ => panic!("I only know how to add integers")
+        }
+
+    } else {
+        panic!("evalaute_addition did not receive expression type: addition")
+    }
+}
+
+
+fn evaluate_fixed_point(expression: &Expression) -> f64 {
+    // Finish this for homework 16
+
+}
+
+fn evaluate_add_fixed_points(expressions: &Vec<Expression>) -> Expression {
+    let mut beforesum = 0;
+    let mut aftersum = 0;
+    for each in expressions {
+        beforesum += before_decimal(&each);
+        aftersum += after_decimal(&each);
+        if aftersum >= 100 {
+            aftersum -= 100;
+            beforesum += 1;
+        }
+    }
+    return Expression::FixedPoint(beforesum, aftersum)
+}
+
+fn evaluate_enviroment_variable(enviroment: Environment, key: String) -> Expression {
+    return Expression::FixedPoint(0,0);
+
+}
+
+
+fn evaluate(expression: &Expression) -> f64 {
+    match expression {
+        Expression::Integer(_) => evaluate_integer(&expression),
+        Expression::Addition(_) => evaluate(&evaluate_addition(&expression)),
+        Expression::FixedPoint(_,_) => evaluate_fixed_point(&expression),
+        _ => panic!("Not Implemented!")
+    }
+}
+
+
+
+// ------------
+// - Old Code -
+// ------------
 
 // Does not work for any results or products that have a leading 0 after decimal point
 // fn evaluate_add_fixed_points(expressions: &Vec<Expression>) -> Expression {
@@ -114,31 +188,6 @@ fn after_decimal(fixed_point: &Expression) -> i32 {
 //     return sum;
 // }
 
- 
-
-fn f64_as_fixed_point(number: &f64) -> Expression {
-    let first = *number as i32;
-    let mut second = number - first as f64;
-    while second.fract() != 0.0 {
-        second = second * 10.0;
-    }
-    Expression::FixedPoint(first, second as i32)
-
-}
-
-fn evaluate_addition(expression: &Expression) -> Expression {
-    if let Expression::Addition(expressions) = expression {
-        match expressions[0] {
-            Expression::Integer(_) => evaluate_add_integers(&expressions),
-            Expression::FixedPoint(_,_) => evaluate_add_fixed_points(&expressions),
-            _ => panic!("I only know how to add integers")
-        }
-
-    } else {
-        panic!("evalaute_addition did not receive expression type: addition")
-    }
-}
-
 // fn evaluate_fixed_point(expression: &Expression) -> f64 {
 //     if let Expression::FixedPoint(first, second) = expression {
 //         let mut decimal = *second as f64;
@@ -151,37 +200,7 @@ fn evaluate_addition(expression: &Expression) -> Expression {
 //     }
 // }
 
-fn evaluate_fixed_point(expression: &Expression) -> f64 {
-    if let Expression::FixedPoint(before, after) = expression {
-        return *before as f64 + (*after as f64) * 0.01
-    } else {
-        panic!("Not given Fixed Point");
-    }
-}
 
-fn evaluate_add_fixed_points(expressions: &Vec<Expression>) -> Expression {
-    let mut beforesum = 0;
-    let mut aftersum = 0;
-    for each in expressions {
-        beforesum += before_decimal(&each);
-        aftersum += after_decimal(&each);
-        if aftersum >= 100 {
-            aftersum -= 100;
-            beforesum += 1;
-        }
-    }
-    return Expression::FixedPoint(beforesum, aftersum)
-}
-
-
-fn evaluate(expression: &Expression) -> f64 {
-    match expression {
-        Expression::Integer(_) => evaluate_integer(&expression),
-        Expression::Addition(_) => evaluate(&evaluate_addition(&expression)),
-        Expression::FixedPoint(_,_) => evaluate_fixed_point(&expression),
-        _ => panic!("Not Implemented!")
-    }
-}
 
 
 
