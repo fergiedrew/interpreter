@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub enum Expression {
@@ -9,21 +10,34 @@ pub enum Expression {
 }
 
 pub struct Environment {
-    key: String,
-    value: Expression
+     hash_map: HashMap<String, Expression>,
+     parent: Box<Option<Environment>>,
 }
 
 impl Environment {
-    fn new() -> Environment {
-        Environment { key: String::from(""), value: Expression::Number(0.0) }
+    fn new(parent: Environment) -> Environment {
+        Environment { hash_map: HashMap::new(), parent: Box::new(Option::Some(parent)) }
+    }
+
+    fn root() -> Environment {
+        Environment{hash_map: HashMap::new(), parent: Box::new(Option::None)}
+    }
+
+    fn insert(self: &mut Environment, key: String, expression: Expression) {
+        self.hash_map.insert(key, expression);
+
     }
     fn value_for_key(self: &Environment, key: &String) -> &Expression {
-        if &self.key == key {
-            &self.value
-        } else {
-            panic!("No value for key found in environment")
+        match self.hash_map.get(key) {
+            Some(expression) => expression,
+            None => match &*self.parent {
+                Some(environment) => environment.value_for_key(key),
+                None => panic!("not found in any environment")
+            }
         }
     }
+
+
 }
 
 fn evaluate(expression: &Expression, environment: &Environment) -> f64 {
@@ -109,9 +123,13 @@ fn main() {
 
 #[cfg(test)]
 mod testing {
+    use crate::HashMap;
+    use crate::Environment;
+    use crate::Expression;
+    use crate::evaluate;
 
-    fn num(value: f64) -> crate::Expression{
-        crate::Expression::Number(value)
+    fn num(value: f64) -> Expression{
+        Expression::Number(value)
     }
 
     #[test]
@@ -124,36 +142,17 @@ mod testing {
         // arrange
         let number = num(37.0);
         // act
-        let value = crate::evaluate(&number, &crate::Environment::new());
+        let value = crate::evaluate(&number, &crate::Environment::root());
         //assert
         assert_eq!(value, 37.0)
     }
 
-    #[test]
-    fn test_environment_contains_variable() {
-        let environment = crate::Environment {key: String::from("blegh"), value: num(5.0)};
 
-        let key = environment.key;
-        let value = crate::evaluate(&environment.value,  &crate::Environment::new());
-
-        assert_eq!(key, String::from("blegh"));
-        assert_eq!(value, 5.0)
-    }
-
-    #[test]
-    fn test_environment_holds_value() {
-        let environment = crate::Environment{key: String::from("foo"), value: num(42.0)};
-
-        let expression = environment.value_for_key(&String::from("foo"));
-        let value = crate::evaluate(&expression,  &crate::Environment::new());
-
-        assert_eq!(value, 42.0)
-    }
 
     #[test]
     fn test_addition() {
         let addition = crate::Expression::Add(vec![num(2.0), num(2.0)]);
-        let enviroment = &crate::Environment::new();
+        let enviroment = &crate::Environment::root();
 
         let value = crate::evaluate(&addition, enviroment);
 
@@ -161,20 +160,68 @@ mod testing {
     }
     #[test]
     fn test_variable() {
-        let environment = crate::Environment{key: String::from("foo"), value: num(42.0)};
-        let variable = crate::Expression::Variable(String::from("foo"));
+        let mut environment = Environment::root();
+        environment.insert("foo".to_string(), num(5.0));
 
-        let value = crate::evaluate(&variable, &environment);
+        let key = "foo".to_string();
+        let variable = Expression::Variable("foo".to_string());
+        let value = evaluate(&variable, &environment );
 
-        assert_eq!(value, 42.0)
+        assert_eq!(value, 5.0)
     }
     #[test]
-    fn test_subtraction() {
+    fn test_subtraction() { 
         let subtraction = crate::Expression::Subtract(vec![num(2.0), num(2.0), num(2.0)]);
-        let enviroment = crate::Environment::new();
+        let enviroment = crate::Environment::root();
 
         let value = crate::evaluate(&subtraction, &enviroment);
 
         assert_eq!(value, -2.0)
     }
+    #[test]
+    fn test_variable_in_addition() {
+        let variable = Expression::Variable(String::from("foo"));
+        let mut environment = Environment::root();
+        environment.insert("foo".to_string(), num(5.0));
+        let expression = Expression::Add(vec![num(2.0), variable]);
+        let value = evaluate(&expression, &environment);
+
+        assert_eq!(value, 7.0)
+
+
+    }
+
+    #[test]
+    fn test_multilevel_environment() {
+        // arrange
+        let mut root = Environment::root();
+        root.insert("foo".to_string(), num(42.0));
+        let mut sub = Environment::new(root);
+        sub.insert("bar".to_string(), num(5.0));
+
+        // act 
+        let should_be_42 = evaluate(&Expression::Variable("foo".to_string()), &sub);
+
+
+        // assert
+        assert_eq!(should_be_42, 42.0)
+
+    }
+    #[test]
+    fn test_symmetrical_variables() {
+        // arrange
+        let mut root = Environment::root();
+        root.insert("x".to_string(), num(42.0));
+        let mut sub = Environment::new(root);
+        sub.insert("x".to_string(), num(5.0));
+
+        // act
+        let should_be_5 = evaluate(&Expression::Variable("x".to_string()), &sub);
+
+        // assert
+        assert_eq!(should_be_5, 5.0)
+
+        
+    }
+
 }
